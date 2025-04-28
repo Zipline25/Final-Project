@@ -53,7 +53,11 @@ while running:
           clicks = clicks + 1
           print(clicks)
         elif clicks >= 10 and clicks < 20:
-          print ("click")
+          button_size = [ 50 , 50 ]
+          random_pos_0 = random.randint( 1 , 500 )
+          random_pos_1 = random.randint( 1 , 500 )
+          button_pos = [ random_pos_0 , random_pos_1 ]
+          clicks = clicks + 1
     
 
   """ draw to our screen """
