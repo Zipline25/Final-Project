@@ -8,10 +8,11 @@ This program is my final project.
 import pygame
 import random
 
+ball_use_image = False  # start with a normal ball
 pygame.init()
 width, height = 600, 450
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Breakout Clone")
+pygame.display.set_caption("BreakBrick")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 24)
 
@@ -22,10 +23,6 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 black = (0, 0, 0)
 
-# images
-
-ball_image = pygame.image.load('images/cat_face.jpg')
-
 # paddle
 paddle = pygame.Rect(width // 2 - 60, height - 30, 120, 10)
 
@@ -33,11 +30,20 @@ paddle = pygame.Rect(width // 2 - 60, height - 30, 120, 10)
 ball = pygame.Rect(width // 2 - 10, height // 2, 20, 20)
 ball_speed = [4, -4]
 
+# images
+cat_face = pygame.image.load('images/cat_face.jpg')
+cat_face = pygame.transform.scale(cat_face, (ball.width + 10, ball.height + 10))
+
 # game state
 lives = 3
 level = 1
 running = True
 game_over = False
+
+# power-up states
+power_up_timer = 0
+ball_color = (255, 255, 255)
+paddle_original_width = paddle.width
 
 
 # function to create bricks for a level
@@ -89,7 +95,7 @@ while running:
     if ball.top <= 0:
       ball_speed[1] *= -1
 
-    # bottom collision = lose life or game over
+    # bottom collision, lose life or game over
     if ball.bottom >= height:
       lives -= 1
       if lives > 0:
@@ -109,16 +115,44 @@ while running:
     for brick_index, brick in enumerate(bricks):
       if ball.colliderect(brick["rect"]):
         ball_speed[1] *= -1
-        # check if special brick is hit
+
         if brick["type"] == "special":
           special_bricks_left -= 1
-        del bricks[brick_index]
+
+          # roll a power-up effect (20% chance for each)
+          if random.random() < 0.2:
+            ball_use_image = True
+            
+          if random.random() < 0.2:
+              ball_speed[0] *= 1.2
+              ball_speed[1] *= 1.2
+
+          if random.random() < 0.2:
+              # limit max size
+              paddle.width = min(paddle.width + 40, 200)  
+              power_up_timer = pygame.time.get_ticks()
+
+          if random.random() < 0.2:
+              lives += 1
+
+          if random.random() < 0.2:
+              ball_color = (random.randint(50,255), random.randint(50,255), random.randint(50,255))
+              power_up_timer = pygame.time.get_ticks()
+
+        # delete after checking the type
+        del bricks[brick_index]  
         break
 
     # if all special bricks are hit, go to the next level
     if special_bricks_left == 0:
       level += 1
       bricks, special_bricks_left = create_bricks()  # Create new level bricks
+
+    # reset paddle size and ball color after 5 seconds
+    if power_up_timer and pygame.time.get_ticks() - power_up_timer > 5000:
+      paddle.width = paddle_original_width
+      ball_color = (255, 255, 255)
+      power_up_timer = 0
 
   # draw everything
   pygame.draw.rect(screen, blue, paddle)
@@ -129,6 +163,12 @@ while running:
       pygame.draw.rect(screen, red, brick["rect"])
     else:
       pygame.draw.rect(screen, green, brick["rect"])
+
+    if ball_use_image:
+      screen.blit(cat_face, ball.topleft)
+    else:
+      pygame.draw.ellipse(screen, ball_color, ball)
+
 
   # draw lives and level info
   lives_text = font.render(f"Lives: {lives}", True, white)
@@ -145,7 +185,7 @@ while running:
     pygame.time.wait(2000)
     running = False
 
-  # game Over condition
+  # game over condition
   if game_over:
     game_over_text = font.render("GAME OVER", True, red)
     screen.blit(game_over_text, (width // 2 - 70, height // 2))
@@ -155,5 +195,5 @@ while running:
 
   pygame.display.flip()
   clock.tick(60)
-
+  
 pygame.quit()
