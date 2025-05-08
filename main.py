@@ -55,7 +55,7 @@ def create_bricks():
       rect = pygame.Rect(col * (width // 8), row * 30 + 40, (width // 8) - 5,
                          30 - 5)
       if random.random(
-      ) < 0.2 * level:  # Increase special brick chance with level
+      ) < 0.2 * level:  
         brick_type = "special"
         special_bricks_left += 1
       else:
@@ -67,7 +67,7 @@ def create_bricks():
 # start the game with level 1 bricks
 bricks, special_bricks_left = create_bricks()
 
-# game Loop
+# game loop
 while running:
   screen.fill(black)
 
@@ -146,7 +146,7 @@ while running:
     # if all special bricks are hit, go to the next level
     if special_bricks_left == 0:
       level += 1
-      bricks, special_bricks_left = create_bricks()  # Create new level bricks
+      bricks, special_bricks_left = create_bricks() 
 
     # reset paddle size and ball color after 5 seconds
     if power_up_timer and pygame.time.get_ticks() - power_up_timer > 5000:
